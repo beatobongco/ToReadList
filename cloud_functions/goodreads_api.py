@@ -9,13 +9,15 @@ client = gr.Client(developer_key=os.environ["GOODREADS_KEY"])
 def suggest_books(q):
     # returns max of 3 books title, author along with goodreads ID
     try:
-        return [
-            {
-                "id": book["best_book"]["id"]["#text"],
-                "text": f"{book['best_book']['title']} - {book['best_book']['author']['name']}",
-            }
-            for book in client.search_book(q)["results"]["work"][:3]
-        ]
+        return {
+            "results": [
+                {
+                    "id": book["best_book"]["id"]["#text"],
+                    "text": f"{book['best_book']['title']} - {book['best_book']['author']['name']}",
+                }
+                for book in client.search_book(q)["results"]["work"][:3]
+            ]
+        }
     except KeyError:
         pass
 
