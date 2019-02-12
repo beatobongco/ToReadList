@@ -13,7 +13,9 @@ const App = () => {
   const [suggestionIndex, setSuggestionIndex] = useState(-1);
   const addBook = goodreadsId => {
     inputRef.current.value = '';
-    setBooks(books.concat([goodreadsId]));
+    if (books.indexOf(goodreadsId) === -1) {
+      setBooks(books.concat([goodreadsId]));
+    }
   };
   const onTab = e => {
     if (e.keyCode === 9) {
