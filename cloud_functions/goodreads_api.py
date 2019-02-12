@@ -6,17 +6,6 @@ from flask import abort, jsonify
 client = gr.Client(developer_key=os.environ["GOODREADS_KEY"])
 
 
-class add_cors_header(object):
-    def __init__(self, f):
-        self.f = f
-
-    def __call__(self, *args):
-        response = jsonify(**self.f(*args))
-        response.headers.set("Access-Control-Allow-Origin", "*")
-        response.headers.set("Access-Control-Allow-Methods", "GET")
-        return response
-
-
 def suggest_book(q):
     # returns book title, author along with goodreads ID
     try:
@@ -46,12 +35,12 @@ def get_book(goodreads_id):
 
 def cloud_function(request):
     try:
-        action = request["action"]
+        action = request.args["action"]
         res = None
         if action == "suggest":
-            res = suggest_book(request["query"])
+            res = suggest_book(request.args["query"])
         elif action == "get_book":
-            res = get_book(request["id"])
+            res = get_book(request.args["id"])
         response = jsonify(**res)
         response.headers.set("Access-Control-Allow-Origin", "*")
         response.headers.set("Access-Control-Allow-Methods", "GET")
