@@ -6,14 +6,16 @@ from flask import abort, jsonify
 client = gr.Client(developer_key=os.environ["GOODREADS_KEY"])
 
 
-def suggest_book(q):
-    # returns book title, author along with goodreads ID
+def suggest_books(q):
+    # returns max of 3 books title, author along with goodreads ID
     try:
-        book = client.search_book(q)["results"]["work"][0]["best_book"]
-        return {
-            "id": book["id"]["#text"],
-            "text": f"{book['title']} - {book['author']['name']}",
-        }
+        return [
+            {
+                "id": book["best_book"]["id"]["#text"],
+                "text": f"{book['best_book']['title']} - {book['best_book']['author']['name']}",
+            }
+            for book in client.search_book(q)["results"]["work"][:3]
+        ]
     except KeyError:
         pass
 
@@ -38,7 +40,7 @@ def cloud_function(request):
         action = request.args["action"]
         res = None
         if action == "suggest":
-            res = suggest_book(request.args["query"])
+            res = suggest_books(request.args["query"])
         elif action == "get_book":
             res = get_book(request.args["id"])
         response = jsonify(**res)
