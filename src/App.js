@@ -11,6 +11,24 @@ const App = () => {
   const [timeoutId, setTimeoutId] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionIndex, setSuggestionIndex] = useState(-1);
+  const addBook = goodreadsId => {
+    inputRef.current.value = '';
+    setBooks(books.concat([goodreadsId]));
+  };
+  const onTab = e => {
+    if (e.keyCode === 9) {
+      // cycle thru suggestions, copying text
+      if (suggestions.length > 0) {
+        let newIndex = suggestionIndex + 1;
+        if (newIndex > suggestions.length - 1) {
+          newIndex = 0;
+        }
+        inputRef.current.value = suggestions[newIndex].text;
+        setSuggestionIndex(newIndex);
+      }
+      e.preventDefault();
+    }
+  };
   useEffect(() => {
     if (query.length > 0) {
       clearTimeout(timeoutId);
@@ -34,8 +52,7 @@ const App = () => {
       <form
         onSubmit={e => {
           if (suggestionIndex > -1) {
-            inputRef.current.value = '';
-            setBooks(books.concat([suggestions[suggestionIndex].id]));
+            addBook(suggestions[suggestionIndex].id);
           }
           e.preventDefault();
         }}
@@ -46,20 +63,7 @@ const App = () => {
             tabIndex="0"
             type="text"
             ref={inputRef}
-            onKeyDown={e => {
-              if (e.keyCode === 9) {
-                // cycle thru suggestions, copying text
-                if (suggestions.length > 0) {
-                  let newIndex = suggestionIndex + 1;
-                  if (newIndex > suggestions.length - 1) {
-                    newIndex = 0;
-                  }
-                  inputRef.current.value = suggestions[newIndex].text;
-                  setSuggestionIndex(newIndex);
-                }
-                e.preventDefault();
-              }
-            }}
+            onKeyDown={onTab}
             onChange={e => {
               setQuery(e.target.value);
               setSuggestionIndex(-1);
@@ -70,14 +74,7 @@ const App = () => {
       </form>
 
       {suggestions.map(book => (
-        <Suggestion
-          key={book.id}
-          book={book}
-          addBook={goodreadsId => {
-            inputRef.current.value = '';
-            setBooks(books.concat([goodreadsId]));
-          }}
-        />
+        <Suggestion key={book.id} book={book} addBook={addBook} />
       ))}
 
       {books.map(goodreadsId => (
