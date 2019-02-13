@@ -4,13 +4,18 @@ import 'normalize.css';
 import Book from './Book';
 import Suggestion from './Suggestion';
 
+// TODO: add firebase for persistence then release
+
 const App = () => {
   const inputRef = useRef();
   const [query, setQuery] = useState('');
   const [books, setBooks] = useState(['26156469']);
-  const [timeoutId, setTimeoutId] = useState(null);
-  const [suggestions, setSuggestions] = useState([]);
-  const [suggestionIndex, setSuggestionIndex] = useState(-1);
+  const [suggestions, setSuggestions] = useState({
+    index: -1,
+    timeoutId: null,
+    items: []
+  });
+  const { index, items, timeoutId } = suggestions;
   const addBook = goodreadsId => {
     inputRef.current.value = '';
     if (books.indexOf(goodreadsId) === -1) {
@@ -20,13 +25,13 @@ const App = () => {
   const onTab = e => {
     if (e.keyCode === 9) {
       // cycle thru suggestions, copying text
-      if (suggestions.length > 0) {
-        let newIndex = suggestionIndex + 1;
-        if (newIndex > suggestions.length - 1) {
+      if (items.length > 0) {
+        let newIndex = index + 1;
+        if (newIndex > items.length - 1) {
           newIndex = 0;
         }
-        inputRef.current.value = suggestions[newIndex].text;
-        setSuggestionIndex(newIndex);
+        inputRef.current.value = items[newIndex].text;
+        setSuggestions({ ...suggestions, index: newIndex });
       }
       e.preventDefault();
     }
@@ -34,18 +39,22 @@ const App = () => {
   useEffect(() => {
     if (query.length > 0) {
       clearTimeout(timeoutId);
-      setTimeoutId(
-        setTimeout(() => {
+      setSuggestions({
+        ...suggestions,
+        timeoutId: setTimeout(() => {
           fetch(
             `https://us-central1-woven-grail-231507.cloudfunctions.net/goodreads?action=suggest&query=${query}`
           )
             .then(data => data.json())
             .then(json => {
-              setSuggestions(json.results);
-              setTimeoutId(null);
+              setSuggestions({
+                ...suggestions,
+                items: json.results,
+                timeoutId: null
+              });
             });
         }, 200)
-      );
+      });
     }
   }, [query]);
   return (
@@ -53,8 +62,8 @@ const App = () => {
       <h1>To read list</h1>
       <form
         onSubmit={e => {
-          if (suggestionIndex > -1) {
-            addBook(suggestions[suggestionIndex].id);
+          if (index > -1) {
+            addBook(items[index].id);
           }
           e.preventDefault();
         }}
@@ -68,14 +77,14 @@ const App = () => {
             onKeyDown={onTab}
             onChange={e => {
               setQuery(e.target.value);
-              setSuggestionIndex(-1);
+              setSuggestions({ ...suggestions, index: -1 });
             }}
           />
           <button type="submit">Add</button>
         </p>
       </form>
 
-      {suggestions.map(book => (
+      {items.map(book => (
         <Suggestion key={book.id} book={book} addBook={addBook} />
       ))}
 
