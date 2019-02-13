@@ -27,7 +27,6 @@ def get_book(goodreads_id):
     try:
         book = client.Book.show(goodreads_id)
         authors = book["authors"]["author"]
-        print(type(authors))
         if isinstance(authors, list):
             authors = ", ".join([author["name"] for author in authors])
         else:
