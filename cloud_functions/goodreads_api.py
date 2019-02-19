@@ -14,6 +14,7 @@ def suggest_books(q):
                 {
                     "id": book["best_book"]["id"]["#text"],
                     "text": f"{book['best_book']['title']} - {book['best_book']['author']['name']}",
+                    "image": book["best_book"]["image_url"],
                 }
                 for book in client.search_book(q)["results"]["work"][:3]
             ]
@@ -31,7 +32,12 @@ def get_book(goodreads_id):
             authors = ", ".join([author["name"] for author in authors])
         else:
             authors = authors["name"]
-        return dict(title=book["title"], author=authors, link=book["url"])
+        return dict(
+            title=book["title"],
+            author=authors,
+            link=book["url"],
+            image=book["image_url"],
+        )
     except KeyError:
         pass
 
