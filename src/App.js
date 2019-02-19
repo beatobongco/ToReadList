@@ -1,10 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
+import styled from 'styled-components';
 import './App.css';
 import 'normalize.css';
 import Book from './Book';
-import Suggestion from './Suggestion';
+import Suggestions from './Suggestions';
 
 // TODO: add firebase for persistence then release
+const Container = styled.div`
+  max-width: 500px;
+  margin: 0 auto;
+`;
+
+const Form = styled.form`
+  position: relative;
+`;
 
 const App = () => {
   const inputRef = useRef();
@@ -58,9 +67,9 @@ const App = () => {
     }
   }, [query]);
   return (
-    <div>
+    <Container>
       <h1>To read list</h1>
-      <form
+      <Form
         onSubmit={e => {
           if (index > -1) {
             addBook(items[index].id);
@@ -82,16 +91,13 @@ const App = () => {
           />
           <button type="submit">Add</button>
         </p>
-      </form>
-
-      {items.map(book => (
-        <Suggestion key={book.id} book={book} addBook={addBook} />
-      ))}
+        <Suggestions selectedIndex={index} items={items} addBook={addBook} />
+      </Form>
 
       {books.map(goodreadsId => (
         <Book key={goodreadsId} goodreadsId={goodreadsId} />
       ))}
-    </div>
+    </Container>
   );
 };
 
